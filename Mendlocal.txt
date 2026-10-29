@@ -1,0 +1,267 @@
+Mendlocal.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MendLocal 🛠️</title>
+    <style>
+        *{box-sizing:border-box;font-family:'Segoe UI',sans-serif;margin:0;padding:0;}
+        :root{--orange:#F97316;--green:#22C55E;--blue:#3B82F6;--light:#FAFAF9;--dark:#292524;--grey:#78716C;}
+        body{background:var(--light);color:var(--dark);max-width:520px;margin:0 auto;padding:16px;padding-bottom:80px;}
+        header{background:linear-gradient(135deg,var(--orange),#EA580C);color:white;padding:20px;border-radius:16px;text-align:center;margin-bottom:20px;}
+        header h1{margin:0;font-size:24px;}
+        header p{margin:5px 0 0;opacity:0.9;font-size:14px;}
+        .nav{position:fixed;bottom:0;left:0;right:0;background:white;box-shadow:0 -2px 10px rgba(0,0,0,0.08);display:flex;justify-content:space-around;padding:12px 0;z-index:100;}
+        .nav-btn{text-align:center;background:none;border:none;font-size:12px;color:var(--grey);cursor:pointer;}
+        .nav-btn.active{color:var(--orange);font-weight:bold;}
+        .card{background:white;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+        .tag{display:inline-block;font-size:12px;padding:3px 10px;border-radius:12px;margin-right:6px;margin-bottom:6px;}
+        .tag-urgent{background:#FEE2E2;color:#B91C1C;}
+        .tag-plumbing{background:#DBEAFE;color:#1E40AF;}
+        .tag-electrical{background:#F3E8FF;color:#6B21A8;}
+        .tag-furniture{background:#FED7AA;color:#92400E;}
+        .tag-garden{background:#D1FAE5;color:#065F46;}
+        .tag-other{background:#E5E7EB;color:#374151;}
+        .distance{font-size:13px;color:var(--grey);}
+        .btn{background:var(--orange);color:white;border:none;padding:10px 16px;border-radius:10px;font-size:15px;cursor:pointer;width:100%;font-weight:500;}
+        .btn-green{background:var(--green);}
+        .btn-outline{background:transparent;border:2px solid var(--orange);color:var(--orange);}
+        .btn-small{width:auto;padding:6px 12px;font-size:14px;}
+        input, select, textarea{width:100%;padding:12px;border-radius:8px;border:1px solid #ddd;font-size:15px;margin-top:6px;margin-bottom:12px;}
+        label{font-weight:500;font-size:14px;}
+        .hidden{display:none !important;}
+        .karma-badge{background:linear-gradient(135deg,#FBBF24,#F59E0B);color:#78350F;padding:4px 10px;border-radius:12px;font-size:13px;font-weight:bold;display:inline-block;margin-left:8px;}
+        .user-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+        .avatar{width:36px;height:36px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;}
+        .safety-note{background:#FFF7ED;border-left:3px solid var(--orange);padding:10px;border-radius:6px;font-size:13px;margin-top:12px;}
+        .empty-state{text-align:center;padding:40px 20px;color:var(--grey);}
+        .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+        .tab{padding:6px 14px;border-radius:20px;border:none;background:#eee;cursor:pointer;font-size:14px;}
+        .tab.active{background:var(--orange);color:white;}
+        .request-status{font-size:12px;font-weight:bold;}
+        .status-open{color:#16A34A;}
+        .status-taken{color:#CA8A04;}
+        .status-done{color:var(--blue);text-decoration:line-through;}
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <h1>🛠️ MendLocal</h1>
+        <p>Neighbours helping neighbours — locally</p>
+    </header>
+
+    <!-- MAIN PAGES -->
+    <div id="page-home">
+        <div class="tabs">
+            <button class="tab active" onclick="filterRequests('all')">All</button>
+            <button class="tab" onclick="filterRequests('urgent')">🚨 Urgent</button>
+            <button class="tab" onclick="filterRequests('plumbing')">💧 Plumbing</button>
+            <button class="tab" onclick="filterRequests('electrical')">⚡ Electrical</button>
+            <button class="tab" onclick="filterRequests('furniture')">🪑 Furniture</button>
+            <button class="tab" onclick="filterRequests('garden')">🌱 Garden</button>
+        </div>
+
+        <div id="requests-list"></div>
+        <div class="empty-state" id="empty-message">
+            <p>🎉 No requests yet! Be the first to post one below.</p>
+        </div>
+    </div>
+
+    <div id="page-post" class="hidden">
+        <div class="card">
+            <h3>📝 Need Help With Something?</h3>
+            <label>What needs fixing?</label>
+            <input type="text" id="new-title" placeholder="e.g., Wobbly table, dripping tap...">
+            
+            <label>Describe the problem</label>
+            <textarea id="new-desc" rows="4" placeholder="What's wrong? Do you have tools? Best times you're at home?"></textarea>
+            
+            <label>Category</label>
+            <select id="new-category">
+                <option value="plumbing">💧 Plumbing</option>
+                <option value="electrical">⚡ Electrical</option>
+                <option value="furniture">🪑 Furniture / Assembly</option>
+                <option value="garden">🌱 Garden / Outdoor</option>
+                <option value="other">🔧 Other</option>
+            </select>
+            
+            <label>Approximate distance from you</label>
+            <select id="new-distance">
+                <option value="Within 5 mins">Within 5 mins walk</option>
+                <option value="Within 15 mins">Within 15 mins</option>
+                <option value="Within 1 mile">Within 1 mile</option>
+                <option value="A bit further">A bit further</option>
+            </select>
+            
+            <label style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="new-urgent" style="width:auto;"> This is urgent
+            </label>
+            
+            <button class="btn" onclick="postRequest()">✅ Post Request</button>
+            
+            <div class="safety-note">
+                ⚠️ <strong>Safety Tip:</strong> When someone responds — meet at a doorway, have someone else home, and chat inside the app first.
+            </div>
+        </div>
+    </div>
+
+    <div id="page-karma" class="hidden">
+        <div class="card">
+            <h3>⭐ Your Good Karma</h3>
+            <p style="font-size:40px;font-weight:bold;color:var(--orange);margin:10px 0;" id="karma-score">0</p>
+            <p>Help others → earn Karma. Ask for help → spend it. Simple as that 💛</p>
+            <hr style="margin:15px 0;border:none;border-top:1px solid #eee;">
+            <h4>🏆 Top Local Helpers</h4>
+            <p style="color:var(--grey);font-size:14px;">Start helping others and you'll appear here too!</p>
+        </div>
+    </div>
+
+    <div id="page-about" class="hidden">
+        <div class="card">
+            <h3>ℹ️ About MendLocal</h3>
+            <p><strong>MendLocal</strong> is your local community where neighbours help neighbours fix things — no money, just kindness.</p>
+        </div>
+        <div class="card">
+            <h3>🛡️ Safety Guidelines</h3>
+            <ul style="margin-left:20px;padding:0;">
+                <li style="margin-bottom:8px;">Meet at a doorway or visible area</li>
+                <li style="margin-bottom:8px;">Have someone else at home when strangers visit</li>
+                <li style="margin-bottom:8px;">No need to give out personal contact info</li>
+                <li style="margin-bottom:8px;">Report anything that feels off</li>
+                <li>Trust your gut — it's okay to say no</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="nav">
+        <button class="nav-btn active" onclick="showPage('home')">🏠 Home</button>
+        <button class="nav-btn" onclick="showPage('post')">➕ Post</button>
+        <button class="nav-btn" onclick="showPage('karma')">⭐ Karma</button>
+        <button class="nav-btn" onclick="showPage('about')">ℹ️ Info</button>
+    </div>
+
+<script>
+let requests = JSON.parse(localStorage.getItem('mendlocal_requests')) || [];
+let karma = parseInt(localStorage.getItem('mendlocal_karma')) || 5;
+
+function saveRequests(){
+    localStorage.setItem('mendlocal_requests', JSON.stringify(requests));
+    renderRequests();
+}
+
+function saveKarma(){
+    localStorage.setItem('mendlocal_karma', karma.toString());
+    document.getElementById('karma-score').textContent = karma;
+}
+
+function showPage(pageId){
+    ['home','post','karma','about'].forEach(p=>{
+        document.getElementById('page-'+p).classList.add('hidden');
+        document.querySelector(`.nav-btn:nth-child(${['home','post','karma','about'].indexOf(p)+1})`).classList.remove('active');
+    });
+    document.getElementById('page-'+pageId).classList.remove('hidden');
+    document.querySelector(`.nav-btn:nth-child(${['home','post','karma','about'].indexOf(pageId)+1})`).classList.add('active');
+    if(pageId==='karma') saveKarma();
+}
+
+function postRequest(){
+    const title = document.getElementById('new-title').value.trim();
+    const desc = document.getElementById('new-desc').value.trim();
+    const category = document.getElementById('new-category').value;
+    const distance = document.getElementById('new-distance').value;
+    const urgent = document.getElementById('new-urgent').checked;
+
+    if(!title){alert('Please describe what you need help with!');return;}
+
+    requests.unshift({
+        id: Date.now(),
+        title,
+        desc,
+        category,
+        distance,
+        urgent,
+        status: 'open',
+        time: new Date().toLocaleString()
+    });
+
+    document.getElementById('new-title').value = '';
+    document.getElementById('new-desc').value = '';
+    saveRequests();
+    showPage('home');
+    alert('✅ Posted! Your request is now visible to your local community. Thank you for being part of MendLocal 💚');
+}
+
+function updateStatus(id, newStatus){
+    const req = requests.find(r=>r.id===id);
+    if(req){
+        req.status = newStatus;
+        if(newStatus==='done') karma += 1;
+        saveRequests();
+        saveKarma();
+    }
+}
+
+function deleteRequest(id){
+    if(confirm('Remove this request?')){
+        requests = requests.filter(r=>r.id!==id);
+        saveRequests();
+    }
+}
+
+function filterRequests(category){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    event.target.classList.add('active');
+    renderRequests(category);
+}
+
+function renderRequests(filter='all'){
+    const list = document.getElementById('requests-list');
+    const filtered = filter==='all' ? requests : 
+                      filter==='urgent' ? requests.filter(r=>r.urgent) : 
+                      requests.filter(r=>r.category===filter);
+
+    document.getElementById('empty-message').style.display = filtered.length ? 'none' : 'block';
+
+    list.innerHTML = filtered.map(req => `
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div>
+                    ${req.urgent ? '<span class="tag tag-urgent">🚨 URGENT</span>' : ''}
+                    <span class="tag tag-${req.category}">${req.category.charAt(0).toUpperCase()+req.category.slice(1)}</span>
+                </div>
+                <span class="request-status status-${req.status}">
+                    ${req.status==='open'?'🟢 Open':req.status==='taken'?'🟡 In Progress':'✅ Done'}
+                </span>
+            </div>
+            <h4 style="margin:8px 0 4px;font-size:17px;">${req.title}</h4>
+            <p style="font-size:14px;color:var(--grey);margin-bottom:8px;">${req.desc}</p>
+            <p class="distance">📍 ${req.distance} · Posted ${req.time}</p>
+            
+            ${req.status==='open' ? `
+                <div style="display:flex;gap:8px;margin-top:10px;">
+                    <button class="btn btn-green btn-small" onclick="updateStatus(${req.id},'taken')">🤝 I Can Help!</button>
+                    <button class="btn btn-outline btn-small" onclick="updateStatus(${req.id},'done')">✅ Mark Done</button>
+                    <button class="btn btn-small" style="background:#f1f1f1;color:#666;border:none;" onclick="deleteRequest(${req.id})">🗑️</button>
+                </div>
+            ` : req.status==='taken' ? `
+                <div style="display:flex;gap:8px;margin-top:10px;">
+                    <button class="btn btn-green btn-small" onclick="updateStatus(${req.id},'done')">✅ Mark Done</button>
+                    <button class="btn btn-outline btn-small" onclick="updateStatus(${req.id},'open')">↩️ Still Needs Help</button>
+                </div>
+            ` : `
+                <p style="color:var(--green);margin-top:10px;">✅ Fixed! Thanks to our neighbour who helped 💚</p>
+                <button class="btn btn-small" style="margin-top:6px;background:#f1f1f1;color:#666;border:none;" onclick="deleteRequest(${req.id})">Remove</button>
+            `}
+        </div>
+    `).join('');
+}
+
+renderRequests();
+saveKarma();
+</script>
+</body>
+</html>
